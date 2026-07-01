@@ -1,27 +1,12 @@
 import { Router } from "express";
 import multer from "multer";
-import path from "path";
 import { authMiddleware } from "../middleware/auth";
+import cloudinary from "../lib/cloudinary";
 
 const router = Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/inventory");
-  },
-  filename: (req, file, cb) => {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-
-    cb(null, uniqueName);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024,
   },
@@ -36,19 +21,34 @@ const upload = multer({
   },
 });
 
-router.post("/inventory", authMiddleware, upload.single("image"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({
-      message: "Nenhuma imagem enviada.",
+router.post("/inventory", authMiddleware, upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Nenhuma imagem enviada.",
+      });
+    }
+
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString(
+      "base64"
+    )}`;
+
+    const result = await cloudinary.uploader.upload(base64Image, {
+      folder: "blackstone/inventory",
+      resource_type: "image",
+    });
+
+    return res.status(201).json({
+      message: "Imagem enviada com sucesso.",
+      imageUrl: result.secure_url,
+    });
+  } catch (error) {
+    console.error("Erro no upload Cloudinary:", error);
+
+    return res.status(500).json({
+      message: "Erro ao enviar imagem.",
     });
   }
-
-  const imageUrl = `/uploads/inventory/${req.file.filename}`;
-
-  return res.status(201).json({
-    message: "Imagem enviada com sucesso.",
-    imageUrl,
-  });
 });
 
 export default router;
