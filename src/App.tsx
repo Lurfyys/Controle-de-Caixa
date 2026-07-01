@@ -21,6 +21,7 @@ import {
 
 import { BlackstoneDB, UserData } from "./lib/store";
 import { User } from "./types";
+import { api } from "./services/api";
 
 import { Auth } from "./components/Auth";
 import { Logo } from "./components/Logo";
@@ -49,20 +50,47 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<"luxo" | "claro" | "rubi">("luxo");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const currentSession = BlackstoneDB.getCurrentUser();
+    async function restoreSession() {
+      const token = localStorage.getItem("blackstone_token");
 
-    if (currentSession) {
-      setSession(currentSession);
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
-      const data = BlackstoneDB.getUserData(currentSession.id);
-      setUserData(data);
+      try {
+        const response = await api.me();
 
-      if (data?.settings?.theme) {
-        setTheme(data.settings.theme as any);
+        const restoredUser: User = response.user || response;
+
+        setSession(restoredUser);
+
+        let data = BlackstoneDB.getUserData(restoredUser.id);
+
+        if (!data) {
+          data = BlackstoneDB.initializeUserData(restoredUser);
+        }
+
+        setUserData(data);
+
+        if (data?.settings?.theme) {
+          setTheme(data.settings.theme as any);
+        }
+      } catch (error) {
+        console.error("Erro ao restaurar sessão:", error);
+        localStorage.removeItem("blackstone_token");
+        BlackstoneDB.logout();
+        setSession(null);
+        setUserData(null);
+      } finally {
+        setLoading(false);
       }
     }
+
+    restoreSession();
   }, []);
 
   const handleSaveUserData = (updated: UserData) => {
@@ -87,8 +115,8 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    api.logout();
     BlackstoneDB.logout();
-    localStorage.removeItem("blackstone_token");
     setSession(null);
     setUserData(null);
     setActiveTab("dashboard");
@@ -97,13 +125,26 @@ export default function App() {
   const handleAuthSuccess = (newSession: User) => {
     setSession(newSession);
 
-    const data = BlackstoneDB.getUserData(newSession.id);
+    let data = BlackstoneDB.getUserData(newSession.id);
+
+    if (!data) {
+      data = BlackstoneDB.initializeUserData(newSession);
+    }
+
     setUserData(data);
 
     if (data?.settings?.theme) {
       setTheme(data.settings.theme as any);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-amber-400 flex items-center justify-center font-mono text-xs tracking-[0.3em] uppercase">
+        Carregando BlackStone...
+      </div>
+    );
+  }
 
   if (!session || !userData) {
     return <Auth onAuthSuccess={handleAuthSuccess} theme={theme} />;
@@ -170,7 +211,10 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen flex font-sans ${themeBg}`} id="blackstone-app-frame">
+    <div
+      className={`min-h-screen flex font-sans ${themeBg}`}
+      id="blackstone-app-frame"
+    >
       <div
         className={`lg:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex justify-between items-center ${topbarBg}`}
       >
@@ -410,7 +454,9 @@ export default function App() {
             />
           )}
 
-          {activeTab === "reports" && <ReportsView data={userData} theme={theme} />}
+          {activeTab === "reports" && (
+            <ReportsView data={userData} theme={theme} />
+          )}
 
           {activeTab === "settings" && (
             <SettingsView
