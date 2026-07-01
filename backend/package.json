@@ -2,11 +2,13 @@
   "name": "backend",
   "version": "1.0.0",
   "type": "commonjs",
-  "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "prisma": "prisma studio",
-    "generate": "prisma generate"
-  },
+ "scripts": {
+  "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+  "build": "tsc",
+  "start": "node dist/server.js",
+  "prisma": "prisma studio",
+  "generate": "prisma generate"
+},
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "bcrypt": "^6.0.0",
