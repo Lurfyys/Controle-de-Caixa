@@ -1,0 +1,6 @@
+{
+  "name": "Blackstone ERP",
+  "description": "Sistema ERP premium de gestão, inventário e produção para joalherias e ourives.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

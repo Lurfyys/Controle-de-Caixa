@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+/* CLARO THEME GLOBAL BEAUTIFIER OVERRIDES */
+#blackstone-app-frame:has(.bg-stone-100\/40),
+#blackstone-app-frame:has(.bg-stone-100),
+.bg-stone-100\/40,
+[data-theme="claro"] {
+  /* Override any inputs and select backgrounds to marfim white/stone */
+  input, select, textarea {
+    background-color: #fafaf9 !important;
+    border-color: #e7e5e4 !important;
+    color: #1c1917 !important;
+  }
+  
+  /* Focus fields state */
+  input:focus, select:focus, textarea:focus {
+    background-color: #ffffff !important;
+    border-color: #a8a29e !important;
+  }
+
+  /* Modals overrides */
+  .fixed.bg-neutral-950\/80,
+  [id^="modal-"] {
+    background-color: rgba(28, 25, 23, 0.4) !important;
+    backdrop-filter: blur(4px) !important;
+  }
+  
+  [id^="modal-"] > div {
+    background-color: #ffffff !important;
+    border-color: #e7e5e4 !important;
+    color: #1c1917 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  /* Tables, listings, and text contrast */
+  .text-neutral-100, .text-neutral-200, .text-neutral-300, .text-neutral-400 {
+    color: #292524 !important;
+  }
+  
+  .text-neutral-500 {
+    color: #78716c !important;
+  }
+
+  .border-neutral-800, .border-neutral-800\/40, .border-neutral-800\/60, .border-neutral-800\/80, .border-neutral-800\/50 {
+    border-color: #e7e5e4 !important;
+  }
+
+  /* Progress bars underlying track */
+  .bg-neutral-950 {
+    background-color: #f5f5f4 !important;
+  }
+
+  /* Kanban, notes, and other cards */
+  .bg-neutral-950\/40, .bg-neutral-950\/60, .bg-neutral-900\/40 {
+    background-color: #fafaf9 !important;
+    border-color: #e7e5e4 !important;
+  }
+}
